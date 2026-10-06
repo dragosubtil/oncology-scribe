@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "reference_kind": "authored_engineering_expectations_not_clinical_gold",
+  "notice": "Fictional spelling and preservation tests. No patient data. No clinical or native-language validation. Prompt-known cis plat in case is not independent generalization evidence.",
+  "cases": [
+    {"id":"en-fragment","language":"en","kind":"prompt_known_spelling","text":"cis plat in","expected":[["cis plat in","cisplatin"]]},
+    {"id":"en-asr-tamoxifen","language":"en","kind":"observed_synthetic_asr_error","text":"Tamak Siphon","expected":[["Tamak Siphon","tamoxifen"]]},
+    {"id":"en-trastuzumap","language":"en","kind":"prompt_known_spelling","text":"trastuzumap","expected":[["trastuzumap","trastuzumab"]]},
+    {"id":"en-correct-cisplatin","language":"en","kind":"valid_drug_control","text":"cisplatin","expected":[]},
+    {"id":"en-correct-carboplatin","language":"en","kind":"valid_drug_control","text":"carboplatin","expected":[]},
+    {"id":"en-correct-afatinib","language":"en","kind":"valid_drug_control","text":"afatinib","expected":[]},
+    {"id":"en-diseases","language":"en","kind":"non_drug_preservation","text":"adenocarcinoma; melanoma; lymphoma","expected":[]},
+    {"id":"en-negation","language":"en","kind":"negation_preservation","text":"No fever. Cisplatin was discussed. The patient denies nausea.","expected":[]},
+    {"id":"en-biomarkers","language":"en","kind":"biomarker_preservation","text":"HER2 negative; PD-L1 < 1%. EGFR wild type.","expected":[]},
+    {"id":"en-dose","language":"en","kind":"dose_preservation","text":"The documented doses are 8 mg and 80 mg; verify against the audio.","expected":[]},
+    {"id":"en-fragment-dose","language":"en","kind":"spelling_with_protected_context","text":"Treatment with cis plat in was discussed. The documented dose is 2.5 mg.","expected":[["cis plat in","cisplatin"]]},
+    {"id":"de-fragment","language":"de","kind":"spelling","text":"cis plat in","expected":[["cis plat in","cisplatin"]]},
+    {"id":"de-control","language":"de","kind":"negation_preservation","text":"Kein Fieber. Cisplatin wurde besprochen. HER2 negativ.","expected":[]},
+    {"id":"fr-fragment","language":"fr","kind":"spelling","text":"cis plat ine","expected":[["cis plat ine","cisplatine"]]},
+    {"id":"fr-correct","language":"fr","kind":"native_spelling_control","text":"cisplatine","expected":[]},
+    {"id":"fr-control","language":"fr","kind":"negation_preservation","text":"Pas de fièvre. HER2 négatif. La cisplatine a été discutée.","expected":[]},
+    {"id":"it-fragment","language":"it","kind":"spelling","text":"cis plat ino","expected":[["cis plat ino","cisplatino"]]},
+    {"id":"it-correct","language":"it","kind":"native_spelling_control","text":"cisplatino","expected":[]},
+    {"id":"it-control","language":"it","kind":"negation_preservation","text":"Nessuna febbre. HER2 negativo. Il cisplatino è stato discusso.","expected":[]},
+    {"id":"en-other-drugs","language":"en","kind":"valid_drug_control","text":"pembrolizumab; osimertinib; capecitabine; oxaliplatin","expected":[]}
+  ]
+}

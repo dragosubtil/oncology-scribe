@@ -1,0 +1,49 @@
+{
+  "id": "en-02",
+  "language": "en",
+  "label": "EN | Fictional lung oncology results discussion",
+  "synthetic": true,
+  "fictional": true,
+  "clinically_reviewed": false,
+  "native_language_reviewed": false,
+  "reference_kind": "generation_script_not_independent_gold",
+  "notice": "Synthetic fiction. No real patient. Not clinically or native-language reviewed. No treatment recommendation. Generation reference, not independent gold.",
+  "role_labels": {
+    "doctor": "Doctor",
+    "patient": "Patient"
+  },
+  "turns": [
+    {
+      "role": "doctor",
+      "text": "This fictional appointment concerns the lung biopsy report. Before we discuss its wording, have you noticed any change in your cough?"
+    },
+    {
+      "role": "patient",
+      "text": "The dry cough is still present in the evening. I have no fever and no coughing up blood, but I feel tired."
+    },
+    {
+      "role": "doctor",
+      "text": "The draft report contains an EGFR test entry marked pending. It does not yet document a final molecular result."
+    },
+    {
+      "role": "patient",
+      "text": "I thought pending meant negative. I also saw pembrolizumab in an older letter, but it is not on my current medicine list."
+    },
+    {
+      "role": "doctor",
+      "text": "I will distinguish the older medicine mention from current use. Pending means the laboratory entry is awaiting a completed report."
+    },
+    {
+      "role": "patient",
+      "text": "Please write that I have not started that medicine. My breathlessness on stairs is unchanged, and I have no chest pain."
+    },
+    {
+      "role": "doctor",
+      "text": "Those details are recorded as your report. The follow-up call on Friday is already booked to discuss the completed results and questions."
+    },
+    {
+      "role": "patient",
+      "text": "I will bring the older letter to that conversation. Please also note that the cough interrupts my sleep on some nights."
+    }
+  ]
+}

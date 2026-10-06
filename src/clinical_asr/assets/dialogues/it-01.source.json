@@ -1,0 +1,49 @@
+{
+  "id": "it-01",
+  "language": "it",
+  "label": "IT | Dialogo fittizio: controllo in oncologia mammaria",
+  "synthetic": true,
+  "fictional": true,
+  "clinically_reviewed": false,
+  "native_language_reviewed": false,
+  "reference_kind": "generation_script_not_independent_gold",
+  "notice": "Synthetic fiction. No real patient. Not clinically or native-language reviewed. No treatment recommendation. Generation reference, not independent gold.",
+  "role_labels": {
+    "doctor": "Medico",
+    "patient": "Paziente"
+  },
+  "turns": [
+    {
+      "role": "doctor",
+      "text": "In questo colloquio fittizio in oncologia rivediamo quanto discusso durante l'ultima visita. Quali cambiamenti desidera riferire da allora?"
+    },
+    {
+      "role": "patient",
+      "text": "Nel pomeriggio mi sento stanca, ma non ho febbre, non ho vomito e non avverto nuovi dolori al torace."
+    },
+    {
+      "role": "doctor",
+      "text": "Nella sua lista compare il tamoxifene. Sta parlando di un farmaco già presente nell'elenco oppure del nome citato nella lettera?"
+    },
+    {
+      "role": "patient",
+      "text": "È già presente nella mia lista. Non sto chiedendo modifiche. La lettera di anatomia patologica parla anche dello stato HER2."
+    },
+    {
+      "role": "doctor",
+      "text": "La lettera indica che un chiarimento è ancora in attesa. Qui questa frase non documenta un risultato definitivo positivo o negativo."
+    },
+    {
+      "role": "patient",
+      "text": "Quindi il risultato resta incerto. L'appetito non è cambiato. Non ho notato sanguinamenti né un nuovo nodulo dall'ultimo colloquio."
+    },
+    {
+      "role": "doctor",
+      "text": "Registro le sue dichiarazioni e la domanda sul referto. Il prossimo incontro con il gruppo di oncologia è già fissato per martedì."
+    },
+    {
+      "role": "patient",
+      "text": "Grazie. Lasci la domanda su HER2 nelle note. Vorrei riprendere quel punto e rileggere la lettera durante il prossimo controllo."
+    }
+  ]
+}

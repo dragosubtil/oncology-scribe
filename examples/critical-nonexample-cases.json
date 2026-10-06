@@ -1,0 +1,19 @@
+{
+  "schema_version":1,
+  "reference_kind":"authored_engineering_expectations_not_clinical_gold",
+  "notice":"Fictional spelling probes absent from prompt examples, but target names appear in the bounded glossary. Not independent clinical gold, no native-language validation, no claim of model training-data independence. Frozen before these calls; no prompt changes.",
+  "cases":[
+    {"id":"en-pembrolizumap","language":"en","kind":"nonexample_spelling","text":"pembrolizumap","expected":[["pembrolizumap","pembrolizumab"]]},
+    {"id":"en-osimertinip","language":"en","kind":"nonexample_spelling","text":"osimertinip","expected":[["osimertinip","osimertinib"]]},
+    {"id":"en-paclitaksel","language":"en","kind":"nonexample_spelling","text":"paclitaksel","expected":[["paclitaksel","paclitaxel"]]},
+    {"id":"en-nivolumap","language":"en","kind":"nonexample_spelling","text":"nivolumap","expected":[["nivolumap","nivolumab"]]},
+    {"id":"de-rituximap","language":"de","kind":"nonexample_spelling","text":"rituximap","expected":[["rituximap","rituximab"]]},
+    {"id":"de-gemcitabin","language":"de","kind":"native_spelling_control","text":"gemcitabin","expected":[],"source":"https://www.bfarm.de/SharedDocs/Downloads/DE/Arzneimittel/Pharmakovigilanz/PSUSAS/g-l/gemcitabin2_bescheid_bfarm.pdf?__blob=publicationFile"},
+    {"id":"fr-pertuzumap","language":"fr","kind":"nonexample_spelling","text":"pertuzumap","expected":[["pertuzumap","pertuzumab"]]},
+    {"id":"it-bevacizumap","language":"it","kind":"nonexample_spelling","text":"bevacizumap","expected":[["bevacizumap","bevacizumab"]]},
+    {"id":"en-control","language":"en","kind":"valid_drug_control","text":"No nausea. Nivolumab is listed in the letter.","expected":[]},
+    {"id":"de-control","language":"de","kind":"valid_drug_control","text":"Kein Fieber. Rituximab wurde besprochen.","expected":[]},
+    {"id":"fr-control","language":"fr","kind":"valid_drug_control","text":"Pas de fièvre. Pertuzumab.","expected":[]},
+    {"id":"it-control","language":"it","kind":"valid_drug_control","text":"Nessuna febbre. Bevacizumab.","expected":[]}
+  ]
+}

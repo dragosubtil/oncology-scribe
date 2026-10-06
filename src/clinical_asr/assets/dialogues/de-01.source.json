@@ -1,0 +1,49 @@
+{
+  "id": "de-01",
+  "language": "de",
+  "label": "DE | Fiktive Brustonkologie: Verlauf",
+  "synthetic": true,
+  "fictional": true,
+  "clinically_reviewed": false,
+  "native_language_reviewed": false,
+  "reference_kind": "generation_script_not_independent_gold",
+  "notice": "Synthetic fiction. No real patient. Not clinically or native-language reviewed. No treatment recommendation. Generation reference, not independent gold.",
+  "role_labels": {
+    "doctor": "Arzt",
+    "patient": "Patientin"
+  },
+  "turns": [
+    {
+      "role": "doctor",
+      "text": "In diesem fiktiven Gespräch in der Onkologie besprechen wir den Verlauf. Was hat sich seit dem letzten Termin verändert?"
+    },
+    {
+      "role": "patient",
+      "text": "Am Nachmittag bin ich müde. Ich habe aber kein Fieber, kein Erbrechen und keine neuen Schmerzen im Brustkorb."
+    },
+    {
+      "role": "doctor",
+      "text": "In Ihrer Liste steht Tamoxifen. Meinen Sie ein bereits aufgeführtes Medikament oder den Namen in einem älteren Brief?"
+    },
+    {
+      "role": "patient",
+      "text": "Das Medikament steht schon auf meiner Liste. Ich möchte nichts ändern. Im Befund steht außerdem etwas über den HER2-Status."
+    },
+    {
+      "role": "doctor",
+      "text": "Im Brief steht, dass die Abklärung noch aussteht. Daraus lässt sich hier weder ein positiver noch ein negativer Befund dokumentieren."
+    },
+    {
+      "role": "patient",
+      "text": "Also ist das Ergebnis noch unklar. Mein Appetit ist unverändert. Ich habe keine Blutung und keinen neuen Knoten bemerkt."
+    },
+    {
+      "role": "doctor",
+      "text": "Ich halte Ihre Angaben und die Frage zum Befund fest. Das nächste Gespräch mit dem onkologischen Team ist für Dienstag vereinbart."
+    },
+    {
+      "role": "patient",
+      "text": "Danke. Bitte lassen Sie die Frage zum HER2-Status in den Notizen stehen. Beim nächsten Termin möchte ich den Brief genauer besprechen."
+    }
+  ]
+}

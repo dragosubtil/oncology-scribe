@@ -1,0 +1,49 @@
+{
+  "id": "de-02",
+  "language": "de",
+  "label": "DE | Fiktive Lungenonkologie: Befundfragen",
+  "synthetic": true,
+  "fictional": true,
+  "clinically_reviewed": false,
+  "native_language_reviewed": false,
+  "reference_kind": "generation_script_not_independent_gold",
+  "notice": "Synthetic fiction. No real patient. Not clinically or native-language reviewed. No treatment recommendation. Generation reference, not independent gold.",
+  "role_labels": {
+    "doctor": "Arzt",
+    "patient": "Patientin"
+  },
+  "turns": [
+    {
+      "role": "doctor",
+      "text": "Dieser fiktive Termin betrifft den Bericht zur Lungenbiopsie. Bevor wir die Formulierungen ansehen, hat sich Ihr Husten verändert?"
+    },
+    {
+      "role": "patient",
+      "text": "Der trockene Husten kommt weiterhin am Abend. Ich habe kein Fieber und keinen blutigen Auswurf, bin aber häufiger müde."
+    },
+    {
+      "role": "doctor",
+      "text": "Im vorläufigen Bericht ist der EGFR-Test als ausstehend vermerkt. Ein abschließendes molekulares Ergebnis ist dort noch nicht dokumentiert."
+    },
+    {
+      "role": "patient",
+      "text": "Ich dachte, ausstehend bedeutet negativ. In einem alten Brief steht auch Pembrolizumab, aber nicht auf meiner aktuellen Medikamentenliste."
+    },
+    {
+      "role": "doctor",
+      "text": "Ich trenne die frühere Erwähnung von der aktuellen Einnahme. Ausstehend bedeutet hier, dass der fertige Laborbericht noch fehlt."
+    },
+    {
+      "role": "patient",
+      "text": "Bitte notieren Sie, dass ich dieses Medikament nicht begonnen habe. Die Atemnot beim Treppensteigen ist unverändert. Brustschmerzen habe ich nicht."
+    },
+    {
+      "role": "doctor",
+      "text": "Ich dokumentiere das als Ihre Angaben. Das Telefongespräch am Freitag ist bereits vereinbart, um den vollständigen Befund und offene Fragen zu besprechen."
+    },
+    {
+      "role": "patient",
+      "text": "Ich bringe den alten Brief mit. Bitte schreiben Sie auch auf, dass der Husten meinen Schlaf in manchen Nächten unterbricht."
+    }
+  ]
+}

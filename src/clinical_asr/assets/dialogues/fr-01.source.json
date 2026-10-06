@@ -1,0 +1,49 @@
+{
+  "id": "fr-01",
+  "language": "fr",
+  "label": "FR | Dialogue fictif: suivi en oncologie mammaire",
+  "synthetic": true,
+  "fictional": true,
+  "clinically_reviewed": false,
+  "native_language_reviewed": false,
+  "reference_kind": "generation_script_not_independent_gold",
+  "notice": "Synthetic fiction. No real patient. Not clinically or native-language reviewed. No treatment recommendation. Generation reference, not independent gold.",
+  "role_labels": {
+    "doctor": "Médecin",
+    "patient": "Patiente"
+  },
+  "turns": [
+    {
+      "role": "doctor",
+      "text": "Dans cet entretien fictif en oncologie, nous revenons sur votre dernier rendez-vous. Quels changements souhaitez-vous signaler depuis notre dernière conversation?"
+    },
+    {
+      "role": "patient",
+      "text": "Je suis fatiguée l'après-midi, mais je n'ai pas de fièvre, pas de vomissements et pas de nouvelle douleur dans la poitrine."
+    },
+    {
+      "role": "doctor",
+      "text": "Votre liste mentionne le tamoxifène. Parlez-vous d'un médicament déjà inscrit sur cette liste ou simplement d'un nom dans la lettre?"
+    },
+    {
+      "role": "patient",
+      "text": "Il figure déjà sur ma liste. Je ne demande pas de changement. La lettre de pathologie mentionne aussi le statut HER2."
+    },
+    {
+      "role": "doctor",
+      "text": "La lettre indique qu'une clarification est encore attendue. Cette formulation ne constitue pas, ici, un résultat confirmé positif ou négatif."
+    },
+    {
+      "role": "patient",
+      "text": "Le résultat reste donc incertain. Mon appétit est inchangé. Je n'ai remarqué ni saignement ni nouvelle masse depuis le dernier entretien."
+    },
+    {
+      "role": "doctor",
+      "text": "Je note vos déclarations et votre question sur le compte rendu. Le prochain échange avec l'équipe d'oncologie est déjà fixé à mardi."
+    },
+    {
+      "role": "patient",
+      "text": "Merci. Gardez la question sur HER2 dans les notes. Je voudrais reprendre ce point et relire la lettre lors du suivi."
+    }
+  ]
+}

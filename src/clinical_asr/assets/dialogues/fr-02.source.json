@@ -1,0 +1,49 @@
+{
+  "id": "fr-02",
+  "language": "fr",
+  "label": "FR | Dialogue fictif: questions sur une biopsie pulmonaire",
+  "synthetic": true,
+  "fictional": true,
+  "clinically_reviewed": false,
+  "native_language_reviewed": false,
+  "reference_kind": "generation_script_not_independent_gold",
+  "notice": "Synthetic fiction. No real patient. Not clinically or native-language reviewed. No treatment recommendation. Generation reference, not independent gold.",
+  "role_labels": {
+    "doctor": "Médecin",
+    "patient": "Patiente"
+  },
+  "turns": [
+    {
+      "role": "doctor",
+      "text": "Ce rendez-vous fictif porte sur le compte rendu de la biopsie pulmonaire. Avant de le relire, votre toux a-t-elle changé?"
+    },
+    {
+      "role": "patient",
+      "text": "La toux sèche revient encore le soir. Je n'ai pas de fièvre et je ne crache pas de sang, mais je suis fatiguée."
+    },
+    {
+      "role": "doctor",
+      "text": "Le document provisoire indique que le test EGFR est en attente. Il ne contient pas encore de résultat moléculaire définitif."
+    },
+    {
+      "role": "patient",
+      "text": "Je pensais que cela voulait dire négatif. Une ancienne lettre cite le pembrolizumab, mais il ne figure pas sur ma liste actuelle."
+    },
+    {
+      "role": "doctor",
+      "text": "Je distinguerai cette ancienne mention des médicaments actuels. En attente signifie ici que le laboratoire n'a pas encore finalisé son compte rendu."
+    },
+    {
+      "role": "patient",
+      "text": "Notez que je n'ai pas commencé ce médicament. Mon essoufflement dans les escaliers est inchangé, et je n'ai pas de douleur thoracique."
+    },
+    {
+      "role": "doctor",
+      "text": "Je note ces éléments comme vos déclarations. L'appel de suivi de vendredi est déjà prévu pour discuter du rapport complet et de vos questions."
+    },
+    {
+      "role": "patient",
+      "text": "J'apporterai l'ancienne lettre. Merci de noter aussi que la toux me réveille certaines nuits, même si elle ne survient pas chaque soir."
+    }
+  ]
+}

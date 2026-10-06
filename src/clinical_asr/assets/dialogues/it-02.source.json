@@ -1,0 +1,49 @@
+{
+  "id": "it-02",
+  "language": "it",
+  "label": "IT | Dialogo fittizio: chiarimenti sulla biopsia polmonare",
+  "synthetic": true,
+  "fictional": true,
+  "clinically_reviewed": false,
+  "native_language_reviewed": false,
+  "reference_kind": "generation_script_not_independent_gold",
+  "notice": "Synthetic fiction. No real patient. Not clinically or native-language reviewed. No treatment recommendation. Generation reference, not independent gold.",
+  "role_labels": {
+    "doctor": "Medico",
+    "patient": "Paziente"
+  },
+  "turns": [
+    {
+      "role": "doctor",
+      "text": "Questo appuntamento fittizio riguarda il referto della biopsia polmonare. Prima di leggerlo insieme, ha osservato cambiamenti nella tosse?"
+    },
+    {
+      "role": "patient",
+      "text": "La tosse secca compare ancora la sera. Non ho febbre e non ho sangue nell'espettorato, ma mi sento spesso stanca."
+    },
+    {
+      "role": "doctor",
+      "text": "Nel documento provvisorio il test EGFR risulta in attesa. Non è ancora riportato un risultato molecolare definitivo del laboratorio."
+    },
+    {
+      "role": "patient",
+      "text": "Pensavo che in attesa significasse negativo. Una vecchia lettera cita pembrolizumab, ma non compare nella mia lista attuale dei farmaci."
+    },
+    {
+      "role": "doctor",
+      "text": "Distinguerò quella vecchia citazione dall'uso attuale. In attesa significa qui che il laboratorio non ha ancora completato il referto."
+    },
+    {
+      "role": "patient",
+      "text": "Scriva che non ho iniziato quel farmaco. Il fiato corto sulle scale non è cambiato, e non ho dolore al torace."
+    },
+    {
+      "role": "doctor",
+      "text": "Registro questi elementi come sue dichiarazioni. La telefonata di controllo di venerdì è già fissata per discutere il referto completo e le domande."
+    },
+    {
+      "role": "patient",
+      "text": "Porterò la vecchia lettera. Per favore, annoti anche che la tosse interrompe il mio sonno alcune notti, anche se non tutte."
+    }
+  ]
+}

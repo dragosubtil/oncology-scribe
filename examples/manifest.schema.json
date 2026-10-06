@@ -1,0 +1,130 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "sample_id": {
+      "maxLength": 120,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9_.-]+$",
+      "title": "Sample Id",
+      "type": "string"
+    },
+    "speaker_id": {
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Speaker Id",
+      "type": "string"
+    },
+    "encounter_id": {
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Encounter Id",
+      "type": "string"
+    },
+    "audio_path": {
+      "minLength": 1,
+      "title": "Audio Path",
+      "type": "string"
+    },
+    "language": {
+      "enum": [
+        "en",
+        "de",
+        "gsw",
+        "fr",
+        "it",
+        "pt"
+      ],
+      "title": "Language",
+      "type": "string"
+    },
+    "target_policy": {
+      "default": "verbatim",
+      "enum": [
+        "verbatim",
+        "standard_de",
+        "dialect"
+      ],
+      "title": "Target Policy",
+      "type": "string"
+    },
+    "split": {
+      "enum": [
+        "train",
+        "dev",
+        "test"
+      ],
+      "title": "Split",
+      "type": "string"
+    },
+    "reference": {
+      "title": "Reference",
+      "type": "string"
+    },
+    "reference_kind": {
+      "default": "speech",
+      "enum": [
+        "speech",
+        "silence"
+      ],
+      "title": "Reference Kind",
+      "type": "string"
+    },
+    "clinical_terms": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Clinical Terms",
+      "type": "array"
+    },
+    "data_use": {
+      "enum": [
+        "simulated",
+        "public",
+        "consented"
+      ],
+      "title": "Data Use",
+      "type": "string"
+    },
+    "source": {
+      "minLength": 1,
+      "title": "Source",
+      "type": "string"
+    },
+    "license": {
+      "minLength": 1,
+      "title": "License",
+      "type": "string"
+    },
+    "dialect": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Dialect"
+    },
+    "reference_reviewed": {
+      "default": false,
+      "title": "Reference Reviewed",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "sample_id",
+    "speaker_id",
+    "encounter_id",
+    "audio_path",
+    "language",
+    "split",
+    "reference",
+    "data_use",
+    "source",
+    "license"
+  ],
+  "title": "Sample",
+  "type": "object"
+}

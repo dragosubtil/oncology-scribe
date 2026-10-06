@@ -1,0 +1,49 @@
+{
+  "id": "en-01",
+  "language": "en",
+  "label": "EN | Fictional breast oncology follow-up",
+  "synthetic": true,
+  "fictional": true,
+  "clinically_reviewed": false,
+  "native_language_reviewed": false,
+  "reference_kind": "generation_script_not_independent_gold",
+  "notice": "Synthetic fiction. No real patient. Not clinically or native-language reviewed. No treatment recommendation. Generation reference, not independent gold.",
+  "role_labels": {
+    "doctor": "Doctor",
+    "patient": "Patient"
+  },
+  "turns": [
+    {
+      "role": "doctor",
+      "text": "At this fictional oncology follow-up, what has changed since our last conversation? I would like to record your symptoms accurately."
+    },
+    {
+      "role": "patient",
+      "text": "I feel tired in the afternoon, but I have no fever, no vomiting, and no new pain in my chest."
+    },
+    {
+      "role": "doctor",
+      "text": "Your notes mention tamoxifen. Are you describing a medicine already on your list, or asking about the name in the letter?"
+    },
+    {
+      "role": "patient",
+      "text": "It is already on my list. I am not asking to change anything. The pathology letter also mentions a HER2 result."
+    },
+    {
+      "role": "doctor",
+      "text": "The letter says that further clarification is pending. That wording should not be recorded as a confirmed positive or negative result."
+    },
+    {
+      "role": "patient",
+      "text": "So the result is still uncertain. My appetite is unchanged, and I have not noticed bleeding or a new lump."
+    },
+    {
+      "role": "doctor",
+      "text": "I will record those statements and your question about the report. The next discussion is scheduled for Tuesday with the oncology team."
+    },
+    {
+      "role": "patient",
+      "text": "Thank you. Please keep the question about HER2 in the notes, so I can return to it during that follow-up."
+    }
+  ]
+}
