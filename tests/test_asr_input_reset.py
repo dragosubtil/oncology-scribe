@@ -36,7 +36,7 @@ def test_unchanged_audio_callback_preserves_completed_transcript_and_exports(fix
     callback, tracker, args, _ = fixture
     generation = tracker["generation"]
     result = callback(tracker, 6, *args)
-    assert len(result) == 11
+    assert len(result) == 10
     assert all(item == gr.skip() for item in result)
     assert tracker["generation"] == generation
     assert tracker["published"]["value"]["text"] == "source"
@@ -58,8 +58,8 @@ def test_real_asr_input_changes_clear_old_source_and_invalidate_receipt(
         changed[1] = "de"
     generation = tracker["generation"]
     result = callback(tracker, 6, *changed)
-    assert result[:10] == ("", "", None, "", None, "", None, None, None, "")
-    assert 'data-status="idle"' in result[10]
+    assert result[:9] == ("", "", None, "", "", None, None, None, "")
+    assert 'data-status="idle"' in result[9]
     assert tracker["generation"] == generation + 1
     assert tracker["published"] is None
 

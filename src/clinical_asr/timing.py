@@ -107,6 +107,8 @@ def render(state: dict | None, now: float | None = None, generation: int = 0) ->
     processed = max(0, current - state.get("started_at", current))
     return (f'<div class="task-status task-{status}" role="status" data-task-clock '
             f'data-generation="{state.get("generation", generation)}" data-status="{status}" '
+            f'data-task-kind="{html.escape(str(state.get("kind") or ""))}" '
+            f'data-event-order="{state.get("event_order") or 0}" '
             f'data-elapsed="{elapsed}" data-processed="{processed}" '
             f'data-expected="{expected if expected is not None else ""}">'
             + "<span>" + "</span><span>".join(parts) + "</span></div>")

@@ -266,7 +266,7 @@ def test_replaced_audio_publishes_failed_clock_without_publishing_draft(history,
     audio.write_bytes(b"changed fictional audio")
     job = list(demo.run_timed_request(lambda *_: "must not run", args, state, history, tracker))[-1][0]
     result = callback(job, tracker, *args)
-    assert result[:6] == ({"__type__": "update"},) * 6
+    assert result[:6] == [{"__type__": "update"}] * 6
     assert 'data-status="failed"' in result[-1]
 
 
@@ -274,7 +274,7 @@ def test_changing_cutoff_before_transcription_remains_an_empty_state():
     app = demo.build_app()
     event = next(d for d in app.config["dependencies"] if d["api_name"] == "update_highlights")
     callback = app.fns[event["id"]].fn
-    assert callback(None, .8, None, {"generation": 0}) == ("", None, None, None)
+    assert callback(None, .8, None, {"generation": 0}) == ["", None, None, None]
 
 
 def test_same_request_ticket_cannot_execute_twice(history):
@@ -301,7 +301,7 @@ def test_note_publication_rejects_new_audio_before_change_handler(history, tmp_p
     event = next(d for d in app.config["dependencies"] if d["api_name"] == "publish_note")
     callback = app.fns[event["id"]].fn
     result = callback(job, tracker, str(second), *args)
-    assert result == ({"__type__": "update"},) * 3
+    assert result == [{"__type__": "update"}] * 3
     assert tracker.get("published") is None
 
 

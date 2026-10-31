@@ -13,6 +13,8 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, create_model
 
+_CLOSING_MARKS = "\"')]}>\u00bb\u2018\u2019\u201c\u201d\u203a"
+
 
 class NoteItem(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -40,8 +42,18 @@ class NoteCategories(BaseModel):
 
 
 def _source_points(text: str) -> list[dict]:
-    return [{"quote": match.group(), "start": match.start(), "end": match.end()}
-            for match in re.finditer(r"\S[\s\S]*?(?:[.!?](?=\s|$)|$)", text) if match.group()]
+    quoted_turn = (rf"\?(?:\s*[{re.escape(_CLOSING_MARKS)}])+"
+                   r"(?=\s+[^\W\d_][\w /.-]{0,40}:)")
+    points = [{"quote": match.group(), "start": match.start(), "end": match.end()}
+              for match in re.finditer(rf"\S[\s\S]*?(?:{quoted_turn}|[.!?](?=\s|$)|$)", text)
+              if match.group()]
+    # French spacing can otherwise leave a closing guillemet as a separate finding.
+    if (len(points) > 1 and points[-2]["quote"].rstrip().endswith("?")
+            and all(char.isspace() or char in _CLOSING_MARKS for char in points[-1]["quote"])):
+        tail = points.pop()
+        points[-1]["end"] = tail["end"]
+        points[-1]["quote"] = text[points[-1]["start"]:tail["end"]]
+    return points
 
 
 def categorize_from_ids(text: str, assignments: dict) -> dict:
@@ -322,12 +334,14 @@ def ollama_positional_note(text: str, model: str = "llama3.1:latest",
     overrides, warnings = [], []
     for point, category in zip(points, labels, strict=True):
         # A textual LLM must not turn an explicit question into a finding.
-        if point["quote"].rstrip().endswith("?") and category != "unassigned":
+        ending = re.sub(rf"[\s{re.escape(_CLOSING_MARKS)}]+$", "", point["quote"])
+        explicit_question = ending.endswith("?")
+        if explicit_question and category != "unassigned":
             overrides.append({"start": point["start"], "end": point["end"],
                               "model_category": category, "category": "unassigned",
                               "reason": "explicit_question"})
             category = "unassigned"
-        elif "?" in point["quote"] and not point["quote"].rstrip().endswith("?"):
+        elif "?" in point["quote"] and not explicit_question:
             warnings.append({"start": point["start"], "end": point["end"],
                              "reason": "embedded_question_requires_review"})
         sections[category].append(point)

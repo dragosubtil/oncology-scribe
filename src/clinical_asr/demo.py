@@ -69,6 +69,17 @@ def correction_preview(report):
     return "".join(rows)
 
 
+def _workflow_snapshot(value, slot):
+    if not isinstance(value, dict) or "generation" not in value:
+        return value
+    record = value.get(slot)
+    if not record:
+        return None
+    if slot == "published":
+        return require_published_result(record["value"], value)
+    return deepcopy(record["report"] if slot == "issued" else record)
+
+
 def propose_corrections_ui(text, language, model):
     from .corrections import ollama_corrections
 
@@ -84,6 +95,7 @@ def propose_corrections_ui(text, language, model):
 
 def review_corrections_ui(source, report, selected, confirmed, tracker=None, audio=None,
                           configuration=None):
+    report = _workflow_snapshot(report, "issued")
     if tracker is not None:
         report = require_issued_proposals(source, report, tracker, audio, configuration)
     if not report or source != report.get("raw_transcript"):
@@ -98,6 +110,7 @@ def review_corrections_ui(source, report, selected, confirmed, tracker=None, aud
         issued = tracker["issued"]
         reviewed["workflow"] = {key: issued["request"][key] for key in
                                 ("request_id", "session_id", "generation", "audio_sha256")}
+        reviewed["workflow"].update(kind="corrections", event_order=issued["request"].get("event_order"))
         reviewed["workflow"]["proposal_id"] = issued["proposal_id"]
         tracker["reviewed"] = deepcopy(reviewed)
     return reviewed["reviewed_transcript"], reviewed, reviewed, reviewed["reviewed_transcript"]
@@ -105,6 +118,8 @@ def review_corrections_ui(source, report, selected, confirmed, tracker=None, aud
 
 def note_source_for_review(source, report, selected, confirmed, reviewed=None,
                            tracker=None, audio=None, configuration=None):
+    report = _workflow_snapshot(report, "issued")
+    reviewed = _workflow_snapshot(reviewed, "reviewed")
     if selected:
         if not report or source != report.get("raw_transcript"):
             raise ValueError("The transcript changed. Request new proposals before reviewing.")
@@ -346,9 +361,12 @@ def issue_proposals(completed, inputs, tracker, current_audio=_AUDIO_UNSPECIFIED
     preview, report, state, choices = current_request_result(completed, inputs, tracker, current_audio)
     if report != state or report.get("raw_transcript") != inputs[0]:
         raise ValueError("Proposal source changed before issuing.")
-    tracker["issued"] = {"report": deepcopy(report), "inputs": deepcopy(list(inputs)),
-                         "request": deepcopy(completed["request"]),
-                         "proposal_id": uuid.uuid4().hex, "status": "issued"}
+    with _WORKFLOW_LOCK:
+        if not _request_is_current(completed.get("request"), inputs, tracker):
+            raise ValueError("Request changed or was superseded. Generate a new result.")
+        tracker["issued"] = {"report": deepcopy(report), "inputs": deepcopy(list(inputs)),
+                             "request": deepcopy(completed["request"]),
+                             "proposal_id": uuid.uuid4().hex, "status": "issued"}
     return preview, report, state, choices
 
 
@@ -373,8 +391,11 @@ def require_published_result(value, tracker, current_inputs=None, current_audio=
 
 
 def remember_published(value, completed, tracker):
-    tracker["published"] = {"value": deepcopy(value), "request": deepcopy(completed["request"]),
-                            "inputs": deepcopy(completed["inputs"])}
+    with _WORKFLOW_LOCK:
+        if not _request_is_current(completed.get("request"), completed["inputs"], tracker):
+            raise ValueError("Request changed or was superseded. Generate a new result.")
+        tracker["published"] = {"value": deepcopy(value), "request": deepcopy(completed["request"]),
+                                "inputs": deepcopy(completed["inputs"])}
 
 
 def run_timed_request(function, inputs, state, history, tracker=None):
@@ -441,10 +462,13 @@ def build_app():
     from .demo_examples import choices, load_example
 
     history = TimingHistory(Path(".build/task-timing.json"))
-    sequence_js = """(tracker, order, ...values) => {
-        window.__oncologySourceEventOrder = (window.__oncologySourceEventOrder || 0) + 1;
-        return [tracker, window.__oncologySourceEventOrder, ...values];
-    }"""
+    def sequence_js(kind, force=False):
+        source = (ASSETS / "source-order.js").read_text(encoding="utf-8")
+        return f"({source})({json.dumps(kind)}, {json.dumps(force)})"
+
+    def delivery_js(kind, indexes, correction_index=-1):
+        source = (ASSETS / "result-gate.js").read_text(encoding="utf-8")
+        return f"({source})({json.dumps(kind)}, {json.dumps(indexes)}, {correction_index})"
 
     def task_panel(label):
         # A regular component is snapshotted in the queued event payload. A State
@@ -516,56 +540,62 @@ def build_app():
 
     def workflow_evidence(completed):
         return {key: completed["request"][key] for key in
-                ("request_id", "session_id", "generation", "input_digest", "audio_sha256")}
+                ("request_id", "session_id", "generation", "input_digest", "audio_sha256", "kind", "event_order")}
 
     def publish_transcription(completed, tracker, *args):
         try:
             raw_text, markup, details, source, state = current_request_result(completed, args, tracker)
             details["workflow"] = workflow_evidence(completed)
             state = deepcopy(details)
-            remember_published(state, completed, tracker)
-            return raw_text, markup, details, source, state, args[1], completion_clock(completed, args, tracker)
+            with _WORKFLOW_LOCK:
+                clock = completion_clock(completed, args, tracker)
+                remember_published(state, completed, tracker)
+                return [raw_text, markup, details, source, state, args[1], clock]
         except Exception as exc:
             gr.Warning(str(exc))
-            return (*((gr.skip(),) * 6), completion_clock(completed, args, tracker))
+            return [*((gr.skip(),) * 6), completion_clock(completed, args, tracker)]
 
     def publish_note(completed, tracker, current_audio, *args):
         try:
             markup, note = current_request_result(completed, args, tracker, current_audio)
             note["workflow"] = workflow_evidence(completed)
-            remember_published(note, completed, tracker)
-            return markup, note, completion_clock(completed, args, tracker, current_audio)
+            with _WORKFLOW_LOCK:
+                clock = completion_clock(completed, args, tracker, current_audio)
+                remember_published(note, completed, tracker)
+                return [markup, note, clock]
         except Exception as exc:
             gr.Warning(str(exc))
-            return gr.skip(), gr.skip(), completion_clock(completed, args, tracker, current_audio)
+            return [gr.skip(), gr.skip(), completion_clock(completed, args, tracker, current_audio)]
 
     def publish_proposals(completed, tracker, current_audio, *args):
         try:
-            preview, report, state, choices = issue_proposals(completed, args, tracker, current_audio)
-            return (
-                preview,
-                report,
-                state,
-                gr.update(choices=choices, value=[]),
-                "",
-                None,
-                None,
-                False,
-                None,
-                completion_clock(completed, args, tracker, current_audio),
-            )
+            with _WORKFLOW_LOCK:
+                clock = completion_clock(completed, args, tracker, current_audio)
+                preview, report, state, choices = issue_proposals(completed, args, tracker, current_audio)
+                return [
+                    preview,
+                    report,
+                    state,
+                    gr.update(choices=choices, value=[]),
+                    "",
+                    None,
+                    None,
+                    False,
+                    None,
+                    clock,
+                ]
         except Exception as exc:
             gr.Warning(str(exc))
-            return (*((gr.skip(),) * 9), completion_clock(completed, args, tracker, current_audio))
+            return [*((gr.skip(),) * 9), completion_clock(completed, args, tracker, current_audio)]
 
     def safe_review(source, report, selected, confirmed, tracker, current_audio,
                     current_language=None, current_model=None):
         try:
-            return review_corrections_ui(source, report, selected, confirmed, tracker, current_audio,
-                                         [current_language, current_model])[:3]
+            return list(review_corrections_ui(source, report, selected, confirmed, tracker, current_audio,
+                                             [current_language, current_model])[:3])
         except Exception as exc:
             gr.Warning(str(exc))
-            return "", {"status": "failed", "error": str(exc)}, None
+            return ["", {"status": "failed", "error": str(exc)}, None]
 
     def transfer_note(source, report, selected, confirmed, reviewed, tracker, current_audio,
                       current_language, current_model):
@@ -578,6 +608,7 @@ def build_app():
             return gr.skip(), gr.skip()
 
     def export_asr_result(value, tracker, *args):
+        value = _workflow_snapshot(value, "published")
         return export_matching_audio(require_published_result(value, tracker, args), args[0])
 
     def export_note_result(value, tracker, source, method, model, current_audio):
@@ -585,6 +616,7 @@ def build_app():
                                                                current_audio), source)
 
     def export_proposal_result(value, source, tracker, current_audio, current_language, current_model):
+        value = _workflow_snapshot(value, "issued")
         report = require_issued_proposals(source, value, tracker, current_audio, [current_language, current_model])
         report["workflow"] = {key: tracker["issued"]["request"][key] for key in
                               ("request_id", "session_id", "generation", "audio_sha256")}
@@ -593,6 +625,7 @@ def build_app():
 
     def export_reviewed_result(value, source, confirmed, selected, tracker, current_audio,
                                current_language, current_model):
+        value = _workflow_snapshot(value, "reviewed")
         require_issued_proposals(source, (tracker.get("issued") or {}).get("report"), tracker,
                                 current_audio, [current_language, current_model])
         if value != tracker.get("reviewed"):
@@ -600,8 +633,9 @@ def build_app():
         return export_reviewed_source(value, source, confirmed, selected)
 
     def refresh_highlights(value, cutoff, current_audio, tracker):
+        value = _workflow_snapshot(value, "published")
         if value is None:
-            return "", None, None, None
+            return ["", None, None, None]
         require_published_result(value, tracker)
         markup, details, state, old_export = update_matching_highlights(value, cutoff, current_audio)
         tracker["generation"] += 1
@@ -612,7 +646,7 @@ def build_app():
         published["request"]["input_digest"] = _inputs_digest(published["inputs"])
         tracker["active_request"] = deepcopy(published["request"])
         tracker["published"]["value"] = deepcopy(state)
-        return markup, details, state, old_export
+        return [markup, details, state, old_export]
 
     def fictional_example():
         text = "The patient reports fatigue after the last cycle. She denies fever. Treatment with cis plat in was discussed. The documented dose is 2.5 mg."
@@ -625,6 +659,7 @@ def build_app():
     def prepare_word(value, current_audio, tracker, evt):
         generation = None
         try:
+            value = _workflow_snapshot(value, "published")
             data = evt._data
             if not value or not data.get('revision') or data['revision'] != value.get('review_revision'):
                 raise ValueError('This word belongs to an earlier transcript.')
@@ -647,6 +682,7 @@ def build_app():
 
     def publish_excerpt(clip, value, current_audio, tracker):
         try:
+            value = _workflow_snapshot(value, "published")
             require_current_excerpt(clip, value, current_audio, tracker)
             label = (f'<div class="playback-selection" aria-live="polite">'
                      f'<strong>{html.escape(clip["word"])}</strong>'
@@ -659,6 +695,7 @@ def build_app():
 
     def replay_excerpt(clip, value, current_audio, tracker):
         try:
+            value = _workflow_snapshot(value, "published")
             clip = reserve_playback_action(clip, value, tracker)
             require_current_excerpt(clip, value, current_audio, tracker)
             yield None, ''
@@ -669,6 +706,7 @@ def build_app():
 
     def continue_audio(clip, value, current_audio, tracker):
         try:
+            value = _workflow_snapshot(value, "published")
             clip = reserve_playback_action(clip, value, tracker)
             with continuation_excerpt(clip, value, current_audio, tracker) as tail:
                 cached = excerpt_audio.move_resource_to_block_cache(tail)
@@ -704,7 +742,6 @@ def build_app():
         )
         with gr.Tabs() as tabs:
             with gr.Tab("Consultation", id="consultation"):
-                state = gr.State()
                 word_job = gr.State()
                 excerpt_state = gr.State()
                 playback_tracker = gr.State({'generation': 0})
@@ -780,8 +817,6 @@ def build_app():
                             speech_reference = gr.Textbox(label="Synthetic speech reference", lines=5,
                                                           interactive=False, buttons=["copy"])
             with gr.Tab("Medical Review", id="medical"):
-                correction_state = gr.State()
-                reviewed_state = gr.State()
                 gr.HTML(
                     '<div class="safety-band">Draft proposals only. Clinical approval pending.</div>'
                 )
@@ -815,7 +850,13 @@ def build_app():
                         correction_markup = gr.HTML(
                             '<div class="empty-result">No proposals yet.</div>'
                         )
-                        selected_edits = gr.CheckboxGroup([], value=[], label="Changes to include")
+                        # Choices are delivered by the client gate. Authorization
+                        # comes from the server-owned report, not widget metadata.
+                        selected_edits = gr.Dropdown(
+                            [], value=[], multiselect=True, allow_custom_value=True,
+                            max_choices=16, label="Changes to include",
+                            info="Select proposals from the current transcript. Unissued edits are rejected.",
+                        )
                         audio_confirmed = gr.Checkbox(
                             False, label="I checked the selected changes against the audio"
                         )
@@ -908,6 +949,14 @@ def build_app():
                 return [gr.update(interactive=True) for _ in locked_controls]
 
         all_trackers = [asr_tracker, proposal_tracker, note_tracker]
+        # Reports remain server-owned; only versioned delivery frames cross to the UI.
+        state = asr_tracker
+        correction_state = reviewed_state = proposal_tracker
+        asr_delivery = gr.JSON(visible=False, elem_classes="delivery-frame")
+        proposal_delivery = gr.JSON(visible=False, elem_classes="delivery-frame")
+        note_delivery = gr.JSON(visible=False, elem_classes="delivery-frame")
+        review_delivery = gr.JSON(visible=False, elem_classes="delivery-frame")
+        highlight_delivery = gr.JSON(visible=False, elem_classes="delivery-frame")
 
         language.change(policy_for, language, policy)
         load_dialogue_button.click(load_dialogue, dialogue,
@@ -919,12 +968,12 @@ def build_app():
         asr_inputs = [audio, language, policy, model, device, threshold, experimental]
         asr_start = transcribe.click(lock_inputs, outputs=locked_controls, queue=False).then(
             start_clock("asr"), [asr_tracker, event_sequence, *asr_inputs], [asr_clock, asr_status],
-            queue=False, js=sequence_js,
+            queue=False, js=sequence_js("asr", force=True),
         )
         asr_start.then(unlock_review, all_trackers, locked_controls, queue=False)
         asr_start.success(
-            lambda: ("", "", None, "", None, "", None, None, None, ""),
-            outputs=[raw, marked, details, note_source, state, preview, note_json,
+            lambda: ("", "", None, "", "", None, None, None, ""),
+            outputs=[raw, marked, details, note_source, preview, note_json,
                      asr_download, note_download, correction_source],
             queue=False,
         ).then(
@@ -937,8 +986,12 @@ def build_app():
         ).then(
             publish_transcription,
             [transcription_job, asr_tracker, *asr_inputs],
-            [raw, marked, details, correction_source, state, correction_language, asr_status],
+            asr_delivery,
             queue=False,
+        ).then(
+            fn=None, inputs=asr_delivery,
+            outputs=[raw, marked, details, correction_source, correction_language, asr_status],
+            js=delivery_js("asr", [0, 1, 2, 3, 5, 6]), queue=False,
         ).then(unlock_inputs, [transcription_job, asr_tracker, *all_trackers], outputs=locked_controls, queue=False)
         continue_medical.click(lambda: gr.update(selected="medical"), outputs=tabs)
         to_note.click(lock_inputs, outputs=locked_controls, queue=False).then(
@@ -950,14 +1003,14 @@ def build_app():
         proposal_start = propose.click(lock_inputs, outputs=locked_controls, queue=False).then(
             start_clock("corrections", with_audio=True),
             [proposal_tracker, event_sequence, audio, correction_source, correction_language, correction_model],
-            [proposal_clock, proposal_status], queue=False, js=sequence_js,
+            [proposal_clock, proposal_status], queue=False, js=sequence_js("corrections", force=True),
         )
         proposal_start.then(unlock_review, all_trackers, locked_controls, queue=False)
         proposal_start.success(
-            lambda: ("", None, None, gr.update(choices=[], value=[]), "", None, None,
+            lambda: ("", None, gr.update(choices=[], value=[]), "", None,
                      False, None, None, ""),
-            outputs=[correction_markup, correction_json, correction_state, selected_edits,
-                     reviewed_text, reviewed_json, reviewed_state, audio_confirmed,
+            outputs=[correction_markup, correction_json, selected_edits,
+                     reviewed_text, reviewed_json, audio_confirmed,
                      correction_download, reviewed_download, note_source],
             queue=False,
         ).then(
@@ -970,32 +1023,32 @@ def build_app():
         ).then(
             publish_proposals,
             [proposal_job, proposal_tracker, audio, correction_source, correction_language, correction_model],
-            [
-                correction_markup,
-                correction_json,
-                correction_state,
-                selected_edits,
-                reviewed_text,
-                reviewed_json,
-                reviewed_state,
-                audio_confirmed,
-                reviewed_download,
-                proposal_status,
-            ],
+            proposal_delivery,
             queue=False,
+        ).then(
+            fn=None, inputs=proposal_delivery,
+            outputs=[correction_markup, correction_json, selected_edits, reviewed_text,
+                     reviewed_json, audio_confirmed, reviewed_download, proposal_status],
+            js=delivery_js("corrections", [0, 1, 3, 4, 5, 7, 8, 9], 2), queue=False,
         ).then(unlock_inputs, [proposal_job, proposal_tracker, *all_trackers], outputs=locked_controls, queue=False)
         apply_edits.click(lock_inputs, outputs=locked_controls, queue=False).then(
             safe_review,
             [correction_source, correction_state, selected_edits, audio_confirmed, proposal_tracker,
              audio, correction_language, correction_model],
-            [reviewed_text, reviewed_json, reviewed_state],
+            review_delivery,
             queue=False,
+        ).then(
+            fn=None, inputs=review_delivery, outputs=[reviewed_text, reviewed_json],
+            js=delivery_js("corrections", [0, 1]), queue=False,
         ).then(unlock_review, all_trackers, outputs=locked_controls, queue=False)
         demo_text.click(fictional_example, outputs=correction_source)
 
         threshold.change(
             refresh_highlights, [state, threshold, audio, asr_tracker],
-            [marked, details, state, asr_download], api_name="update_highlights", queue=False,
+            highlight_delivery, api_name="update_highlights", queue=False,
+        ).then(
+            fn=None, inputs=highlight_delivery, outputs=[marked, details, asr_download],
+            js=delivery_js("asr", [0, 1, 3]), queue=False,
         )
         marked.play_word(
             prepare_word, [state, audio, playback_tracker], [word_job, excerpt_audio, excerpt_label, excerpt_state],
@@ -1009,7 +1062,7 @@ def build_app():
             [excerpt_audio, excerpt_label], queue=True, concurrency_limit=None)
         note_start = generate.click(lock_inputs, outputs=locked_controls, queue=False).then(
             start_clock("note", with_audio=True), [note_tracker, event_sequence, audio, note_source, method, llm],
-            [note_clock, note_status], queue=False, js=sequence_js,
+            [note_clock, note_status], queue=False, js=sequence_js("note", force=True),
         )
         note_start.then(unlock_review, all_trackers, locked_controls, queue=False)
         note_start.success(
@@ -1022,7 +1075,9 @@ def build_app():
             concurrency_id="llm",
             show_progress="hidden",
         ).then(publish_note, [note_job, note_tracker, audio, note_source, method, llm],
-               [preview, note_json, note_status], queue=False
+               note_delivery, queue=False
+               ).then(fn=None, inputs=note_delivery, outputs=[preview, note_json, note_status],
+                      js=delivery_js("note", [0, 1, 2]), queue=False
                ).then(unlock_inputs, [note_job, note_tracker, *all_trackers], outputs=locked_controls, queue=False)
         score.click(compare_texts, [reference, hypothesis, eval_language, eval_policy], metrics)
         export_asr.click(export_asr_result, [state, asr_tracker, *asr_inputs], asr_download)
@@ -1040,16 +1095,16 @@ def build_app():
         def invalidate_asr_result(tracker, event_order, *args):
             status = invalidate_inputs()(tracker, event_order, *args)
             if status == gr.skip():
-                return (gr.skip(),) * 11
-            return "", "", None, "", None, "", None, None, None, "", status
+                return (gr.skip(),) * 10
+            return "", "", None, "", "", None, None, None, "", status
 
         for asr_input in (audio, language, policy, model, device, experimental):
             asr_input.change(
                 invalidate_asr_result,
                 inputs=[asr_tracker, event_sequence, *asr_inputs],
-                outputs=[raw, marked, details, note_source, state, preview, note_json,
+                outputs=[raw, marked, details, note_source, preview, note_json,
                          asr_download, note_download, correction_source, asr_status],
-                queue=False, show_progress="hidden", js=sequence_js,
+                queue=False, show_progress="hidden", js=sequence_js("asr"),
             ).then(unlock_review, all_trackers, locked_controls, queue=False)
         for note_input in (note_source, method, llm):
             note_input.change(lambda: ("", None, None),
@@ -1061,11 +1116,9 @@ def build_app():
         correction_outputs = [
             correction_markup,
             correction_json,
-            correction_state,
             selected_edits,
             reviewed_text,
             reviewed_json,
-            reviewed_state,
             audio_confirmed,
             correction_download,
             reviewed_download,
@@ -1076,10 +1129,8 @@ def build_app():
             return (
                 "",
                 None,
-                None,
                 gr.update(choices=[], value=[]),
                 "",
-                None,
                 None,
                 False,
                 None,
@@ -1091,11 +1142,10 @@ def build_app():
         correction_language.change(reset_corrections, outputs=correction_outputs, queue=False)
         correction_model.change(reset_corrections, outputs=correction_outputs, queue=False)
         selected_edits.change(
-            lambda: ("", None, None, False, None, ""),
+            lambda: ("", None, False, None, ""),
             outputs=[
                 reviewed_text,
                 reviewed_json,
-                reviewed_state,
                 audio_confirmed,
                 reviewed_download,
                 note_source,
@@ -1104,34 +1154,35 @@ def build_app():
         )
 
         def confirmation_changed(confirmed, reviewed):
+            reviewed = _workflow_snapshot(reviewed, "reviewed")
             if not reviewed or reviewed.get("audio_confirmed") is confirmed:
-                return (gr.skip(),) * 5
-            return "", None, None, None, ""
+                return (gr.skip(),) * 4
+            return "", None, None, ""
 
         audio_confirmed.change(
             confirmation_changed,
             [audio_confirmed, reviewed_state],
-            [reviewed_text, reviewed_json, reviewed_state, reviewed_download, note_source],
+            [reviewed_text, reviewed_json, reviewed_download, note_source],
             queue=False,
         )
         for control in (correction_source, correction_language, correction_model):
             control.change(invalidate_inputs(True),
                            inputs=[proposal_tracker, event_sequence, audio, correction_source, correction_language, correction_model],
                            outputs=proposal_status,
-                           queue=False, show_progress="hidden", js=sequence_js).then(
+                           queue=False, show_progress="hidden", js=sequence_js("corrections")).then(
                                unlock_review, all_trackers, locked_controls, queue=False)
         for control in (note_source, method, llm):
             control.change(invalidate_inputs(True), inputs=[note_tracker, event_sequence, audio, note_source, method, llm],
                            outputs=note_status,
-                           queue=False, show_progress="hidden", js=sequence_js).then(
+                           queue=False, show_progress="hidden", js=sequence_js("note")).then(
                                unlock_review, all_trackers, locked_controls, queue=False)
         audio.change(invalidate_inputs(True),
                      inputs=[proposal_tracker, event_sequence, audio, correction_source, correction_language, correction_model],
                      outputs=proposal_status,
-                     queue=False, show_progress="hidden", js=sequence_js).then(
+                     queue=False, show_progress="hidden", js=sequence_js("corrections")).then(
                          unlock_review, all_trackers, locked_controls, queue=False)
         audio.change(invalidate_inputs(True), inputs=[note_tracker, event_sequence, audio, note_source, method, llm], outputs=note_status,
-                     queue=False, show_progress="hidden", js=sequence_js).then(
+                     queue=False, show_progress="hidden", js=sequence_js("note")).then(
                          unlock_review, all_trackers, locked_controls, queue=False)
     return app
 

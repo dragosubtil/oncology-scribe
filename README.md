@@ -45,13 +45,14 @@ categories), and `metrics.py` (text metrics). Assets are under `src/clinical_asr
 ```powershell
 uv run --no-sync pytest -q
 uv run --no-sync ruff check src tests tools
-node --test tests/task_clock.test.cjs tests/word_audio.test.cjs tests/workflow_lock.test.cjs
+node --test tests/task_clock.test.cjs tests/word_audio.test.cjs tests/workflow_lock.test.cjs tests/result_gate.test.cjs tests/source_order.test.cjs
 ```
 
 Use branches and reviewed changes. Add regression tests for failures; do not
 weaken source identity, audio hashes or clinical review requirements for a pass.
 See [verification scope](docs/SHARE_VERIFICATION_EN.md) and
-[third-party notices](docs/THIRD_PARTY_NOTICES.md).
+[third-party notices](docs/THIRD_PARTY_NOTICES.md). Use the locked uv environment;
+the [dependency policy](docs/DEPENDENCIES_EN.md) records the tested Pillow exception.
 
 ## Sharing
 

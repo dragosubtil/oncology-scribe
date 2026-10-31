@@ -1,33 +1,66 @@
 # Verification Scope
 
-Regression checks repeated on Windows / Python 3.12 on 6 October 2026.
-Browser and model-cache checks below were performed on 5 October 2026.
+Checked on Windows 11 / Python 3.12.13 on 30–31 October 2026.
 
-- Complete suite: 766 passed, 10 skipped in the separately installed source
-  copy, including the final playback event-chain fix. Skips concern optional
-  tooling and Windows symlink support; these are not successful tests.
-- The suite includes playback regressions for ambiguous selections, untimed
-  words, stale transcripts and competing requests. It completed without failures;
-  13 warnings came from deliberately exercised rejection paths.
-- JavaScript: 19 passed; Ruff checks passed on 6 October 2026.
-- Clean dependency installation used the locked dependencies and an existing
-  offline package cache, outside OneDrive. No model acquisition was performed.
-- The clean installation loaded the pinned Turbo and Large-v3 caches; Turbo
-  transcribed an eight-second synthetic fixture with word timestamps offline.
-- In-browser checks confirmed word playback, phrase selection, Replay excerpt
-  and Continue audio. Desktop and 320px layouts were inspected. A real phone,
-  independent colleague installation and all browser autoplay policies remain
-  unverified.
+## Automated Checks
 
-Review identified untimed selection boundaries, retained audio after rejected
-selection and a stale event restarting a retained clip. Regression tests and
-guarded playback publication address these cases. Timings remain approximate;
-playback does not prove a medication name or clinical interpretation is correct.
+- Complete Python suite: 799 passed, 10 skipped. The skips concern optional
+  tooling and Windows symlink support; they are not successful tests.
+- JavaScript: 31 passed. Ruff checks passed.
+- The suite includes the reproduced publication races, quoted questions with
+  European punctuation and spacing, source offsets, medication substitutions,
+  negations, doses, stale audio and competing requests. Negative-path tests
+  produced 18 expected warnings. Tests are not proof of clinical accuracy.
+- Publisher tests pause real Gradio postprocessing while the source changes.
+  Hidden JSON frames pass through a client source-order gate before display;
+  server-owned reports remain authoritative for review and export. Identical
+  source events retain their order, while retries and changed inputs advance it.
+- Fresh installation used the locked uv environment outside OneDrive. No model
+  weights were downloaded. Security-floor tests and RGB PNG/WebP image-cache
+  roundtrips passed with Gradio 6.31.0 and Pillow 13.0.0.
+- The known-advisory query returned no matches for 68 installed PyPI dependencies
+  and 74 registry packages in the lockfile on 30 October. This is not a
+  comprehensive security audit. See [the dependency policy](DEPENDENCIES_EN.md),
+  including the explicit temporary Pillow metadata exception.
 
-Only eight explicitly catalogued fictional TTS WAVs are included. Their audio
-and source hashes were checked. Source selection and credential-pattern checks
-were performed; these do not constitute a comprehensive security audit.
+## Workflow Checks
 
-No new clinical benchmark, weight training, patient-data processing or clinical
-validation was performed in this UI/sharing phase. Review the third-party
-notices before redistribution. Keep the server on localhost.
+Chrome completed the following workflow with a fictional English recording:
+load dialogue, local Whisper Turbo transcription, aligned-word playback, phrase
+selection, Replay excerpt, Continue audio, Medical Review, extractive note and
+JSON export. Loading and elapsed time were visible. ETA correctly indicated
+insufficient history before three comparable successful runs.
+
+Desktop and 390px/320px layouts were inspected without horizontal overflow,
+JavaScript errors or HTTP errors in the normal workflow. The export required
+human review and retained the source without uncovered text. Source fidelity
+does not prove that the source transcript is correct.
+
+A short fictional note request also completed through the local Llama 3.1
+positional-category path, with no omitted source and its explicit question kept
+unassigned. This is an integration smoke test, not a model ranking or clinical
+validation. Cold-start time and inference speed depend on the machine.
+
+The local Qwen 3.5 4B path proposed the fictional spelling edit
+`trastuzumap` to `trastuzumab`; selecting it produced the reviewed text in Chrome.
+This was a UI integration exercise with simulated confirmation, not clinical
+audio verification. Real API tests separately reject unknown proposal IDs and
+missing confirmation. The multiselect picker accepts client-delivered choices;
+the current server-issued report determines which edits are eligible.
+
+One repeat request encountered an unavailable Ollama service. It displayed a
+failed task and no proposed edits; local LLM availability is a prerequisite,
+separate from the ASR and extractive paths.
+
+## Remaining Limits
+
+Only eight catalogued fictional TTS WAVs are bundled. Their audio and script
+hashes were checked. They are not independent human references. ASR can still
+misrecognize medication names and biomarkers; extractive notes retain such errors
+until a person reviews them. Review cues and estimated timestamps are not certainty.
+
+No new clinical benchmark, weight training or patient-data processing was
+performed. Other languages and LLMs were not revalidated by this release. A real
+phone, other operating systems, independent colleague installation and every
+browser autoplay policy remain unverified. Keep the server on localhost and
+review third-party terms before redistribution. Clinical approval remains pending.

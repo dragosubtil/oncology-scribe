@@ -17,6 +17,8 @@ uv run --no-sync clinical-asr doctor
 
 The lockfile pins Python packages. Installation requires internet; no paid API
 key is used. Windows is the tested platform. Other platforms need verification.
+Use this uv environment without mixing pip upgrades. The temporary Gradio/Pillow
+compatibility rule is documented in [the dependency policy](DEPENDENCIES_EN.md).
 
 ## Prepare ASR Explicitly
 
@@ -85,12 +87,16 @@ to match the evaluated digest. MedGemma remains an optional comparison with
 unresolved exact upstream provenance. No LLM edit is clinical approval. Review
 selected eligible changes against audio before confirming them.
 
+Open Ollama and wait for it to be ready before requesting terminology edits or
+SOAP categories. If the installed-model check fails, start the local service and
+retry. Transcription and extractive notes do not require Ollama.
+
 ## Edit and Test
 
 ```powershell
 uv run --no-sync pytest -q
 uv run --no-sync ruff check src tests tools
-node --test tests/task_clock.test.cjs tests/word_audio.test.cjs tests/workflow_lock.test.cjs
+node --test tests/task_clock.test.cjs tests/word_audio.test.cjs tests/workflow_lock.test.cjs tests/result_gate.test.cjs tests/source_order.test.cjs
 ```
 
 Node is needed only for JS tests. Restart the server and refresh the page after

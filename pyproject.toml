@@ -17,7 +17,7 @@ dependencies = [
 
 [project.optional-dependencies]
 asr = ["faster-whisper>=1.2,<2"]
-ui = ["gradio>=6,<7"]
+ui = ["gradio>=6.31,<7"]
 data = ["pyarrow>=25,<26", "huggingface-hub>=1,<2", "praatio>=6,<7"]
 dev = ["pytest>=8,<10", "ruff>=0.12,<1"]
 
@@ -33,6 +33,16 @@ clinical_asr = ["assets/*.css", "assets/*.js", "assets/icons/*.svg", "assets/ico
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.uv]
+constraint-dependencies = [
+  "brotli>=1.2.1",
+  "certifi>=2026.10.18",
+  "filelock>=4.2.4",
+  "opentelemetry-api>=1.45.1",
+]
+# Gradio 6's metadata cap predates Pillow 13's security fixes; see the quickstart.
+override-dependencies = ["pillow>=13.0.0,<14"]
 
 [tool.ruff]
 line-length = 100

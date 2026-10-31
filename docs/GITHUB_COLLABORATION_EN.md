@@ -29,6 +29,18 @@ computer, not another team member's server. Keep the server on loopback.
 6. Have another colleague verify installation and the changed workflow before
    merging. Follow the course's submission and contribution requirements.
 
+## First Team Demo
+
+Prepare one ASR model using the quickstart, then load an English fictional
+dialogue and transcribe it on CPU. Check a word against its audio excerpt before
+moving to Medical Review. For a first note without Ollama, choose **Extractive
+points** in Note Draft; SOAP categories require a prepared local LLM.
+
+Loading shows elapsed time. ETA appears after three comparable successful runs
+on that computer; it is an estimate, not a deadline. Downloaded weights and
+processing speed depend on each colleague's machine. Keep exports as drafts
+until their content has been checked; successful execution is not clinical accuracy.
+
 ## Keep Out of Git
 
 Do not commit patient recordings, identifying information, credentials, model
@@ -42,3 +54,14 @@ See [GitHub's sensitive-data guidance](https://docs.github.com/en/authentication
 
 Review [third-party notices](THIRD_PARTY_NOTICES.md) before redistribution.
 The prototype is not clinically validated and requires human review.
+
+## Next Validation Work
+
+- Collect eligible non-patient oncology recordings and independently checked
+  references, including medicines, biomarkers, doses and negations.
+- Arrange native-language review and clinical terminology review. Swiss German
+  dialect output needs references separate from standard-German rendering.
+- Compare ASR, reviewed transcripts and final-note fidelity separately. Synthetic
+  scripts are generation references, not independent clinical ground truth.
+- Extend tests when a real failure is found, and agree on the course concepts
+  and evaluation criteria to demonstrate in the presentation.

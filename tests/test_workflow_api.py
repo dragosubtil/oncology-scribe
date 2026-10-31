@@ -56,7 +56,11 @@ def test_serialized_queued_ticket_cannot_adopt_retry_or_replace_completed_job(mo
         assert calls == ["same source"]
         assert current["request"]["request_id"] == latest["request_id"]
         response = await app.process_api(pub["id"], [None, None, None, *args], state=session)
-        assert response["data"][0] == "current draft"
+        frame = response["data"][0]
+        if hasattr(frame, "model_dump"):
+            frame = frame.model_dump()
+        assert frame[0] == "current draft"
+        assert frame[1]["raw_transcript"] == "same source"
         assert await run(first) == current
         assert await run(latest) == current
         assert calls == ["same source"]
